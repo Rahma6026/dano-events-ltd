@@ -236,14 +236,24 @@
                     // Populate simple inputs
                     simpleFields.forEach(field => {
                         if (document.getElementById(field) && data[field]) {
-                            document.getElementById(field).value = data[field];
+                            let val = data[field];
+                            val = val.replace(/\\/g, '/');
+                            if (field === 'hero_video' && val.includes('0203971-uhd_3840_2160_30fps.mp4')) {
+                                val = 'assets/video/20203971-uhd_3840_2160_30fps.mp4';
+                            }
+                            document.getElementById(field).value = val;
                         }
                     });
 
                     // Populate arrays
-                    if (data.services) servicesData = data.services;
+                    const sanitizeMediaObj = (obj) => {
+                        if (obj.image) obj.image = obj.image.replace(/\\/g, '/');
+                        if (obj.media) obj.media = obj.media.replace(/\\/g, '/');
+                        return obj;
+                    };
+                    if (data.services) servicesData = data.services.map(sanitizeMediaObj);
                     if (data.specialities) specialitiesData = data.specialities;
-                    if (data.gallery) galleryData = data.gallery;
+                    if (data.gallery) galleryData = data.gallery.map(sanitizeMediaObj);
 
                     renderServices();
                     renderSpecialities();
@@ -369,13 +379,26 @@
             const updates = { id: ROW_ID };
             simpleFields.forEach(field => {
                 const el = document.getElementById(field);
-                if (el) updates[field] = el.value;
+                if (el) {
+                    let val = el.value;
+                    val = val.replace(/\\/g, '/');
+                    if (field === 'hero_video' && val.includes('0203971-uhd_3840_2160_30fps.mp4')) {
+                        val = 'assets/video/20203971-uhd_3840_2160_30fps.mp4';
+                    }
+                    updates[field] = val;
+                }
             });
 
+            const sanitizeMediaObj = (obj) => {
+                if (obj.image) obj.image = obj.image.replace(/\\/g, '/');
+                if (obj.media) obj.media = obj.media.replace(/\\/g, '/');
+                return obj;
+            };
+
             // Add JSON arrays
-            updates.services = servicesData;
+            updates.services = servicesData.map(sanitizeMediaObj);
             updates.specialities = specialitiesData;
-            updates.gallery = galleryData;
+            updates.gallery = galleryData.map(sanitizeMediaObj);
 
             try {
                 const { error } = await supabaseClient
